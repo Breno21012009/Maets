@@ -1,229 +1,110 @@
 <?php include "header.php"; ?>
+<?php include "conexaoBD.php"; ?>
 
 <?php
 
-// ======================================
-// CONEXÃO COM O BANCO
-// ======================================
-
-include "conexaoBD.php";
-
-
-// ======================================
-// BUSCAR PROMOÇÕES
-// ======================================
-
-$sql = "SELECT
-            id_Promocoes,
-            nomePromocoes,
-            descricaoPromocoes,
-            categoriaPromocoes,
-            precoPromocoes,
-            precoOriginalPromocoes,
-            capaPromocoes,
-            paginaPromocoes
-        FROM promocoes
-        ORDER BY id_Promocoes DESC";
+// Consulta todas as promoções cadastradas
+$sql = "SELECT * FROM promocoes ORDER BY id_Promocoes DESC";
 
 $resultado = mysqli_query($conn, $sql);
 
-if (!$resultado) {
-    die("Erro ao buscar promoções: " . mysqli_error($conn));
-}
+?>
+
+<h2 class="mb-4">Promoções</h2>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+
+<?php
+
+if ($resultado && mysqli_num_rows($resultado) > 0) {
+
+    while ($jogo = mysqli_fetch_assoc($resultado)) {
 
 ?>
 
-<div class="container my-5">
+    <!-- Card da promoção -->
+    <div class="col">
 
-    <!-- TÍTULO -->
-    <div class="text-center mb-5">
+        <div class="card h-100 shadow-sm">
 
-        <h2 class="fw-bold">
-            Jogos em Promoção
-        </h2>
+            <!-- Capa -->
+            <img 
+                src="<?php echo $jogo['capaPromocoes']; ?>"
+                class="card-img-top"
+                style="height: 280px; object-fit: cover; object-position: center;"
+                alt="<?php echo $jogo['nomePromocoes']; ?>"
+            >
 
-        <p class="text-muted">
-            Aproveite nossas ofertas e economize na compra dos seus jogos favoritos.
-        </p>
+            <div class="card-body d-flex flex-column justify-content-between">
 
-    </div>
+                <div>
 
+                    <!-- Nome -->
+                    <h5 class="card-title fw-bold">
+                        <?php echo $jogo['nomePromocoes']; ?>
+                    </h5>
 
-    <!-- JOGOS -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                    <!-- Descrição -->
+                    <p class="card-text text-muted small">
+                        <?php echo $jogo['descricaoPromocoes']; ?>
+                    </p>
 
-        <?php if (mysqli_num_rows($resultado) > 0): ?>
-
-            <?php while ($jogo = mysqli_fetch_assoc($resultado)): ?>
-
-                <?php
-
-                // ======================================
-                // DESCONTO
-                // ======================================
-
-                $desconto = 0;
-
-                if (
-                    !empty($jogo["precoOriginalPromocoes"]) &&
-                    $jogo["precoOriginalPromocoes"] > 0 &&
-                    $jogo["precoPromocoes"] < $jogo["precoOriginalPromocoes"]
-                ) {
-
-                    $desconto = (
-                        (
-                            $jogo["precoOriginalPromocoes"]
-                            -
-                            $jogo["precoPromocoes"]
-                        )
-                        /
-                        $jogo["precoOriginalPromocoes"]
-                    ) * 100;
-                }
-
-                ?>
-
-
-                <!-- CARD -->
-                <div class="col">
-
-                    <div class="card h-100 shadow-sm">
-
-
-                        <!-- CAPA -->
-                        <img
-                            src="<?php echo htmlspecialchars($jogo["capaPromocoes"]); ?>"
-                            class="card-img-top"
-                            style="
-                                height: 280px;
-                                object-fit: cover;
-                                object-position: center;
-                            "
-                            alt="<?php echo htmlspecialchars($jogo["nomePromocoes"]); ?>"
-                        >
-
-
-                        <!-- CORPO -->
-                        <div class="card-body d-flex flex-column justify-content-between">
-
-                            <div>
-
-                                <!-- NOME -->
-                                <h5 class="card-title fw-bold">
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $jogo["nomePromocoes"]
-                                    );
-                                    ?>
-
-                                </h5>
-
-
-                                <!-- DESCRIÇÃO -->
-                                <p class="card-text text-muted small">
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $jogo["descricaoPromocoes"]
-                                    );
-                                    ?>
-
-                                </p>
-
-                            </div>
-
-
-                            <div>
-
-                                <!-- PREÇOS -->
-                                <div class="mb-3">
-
-                                    <?php if (
-                                        !empty($jogo["precoOriginalPromocoes"]) &&
-                                        $jogo["precoOriginalPromocoes"] > $jogo["precoPromocoes"]
-                                    ): ?>
-
-                                        <span class="text-muted text-decoration-line-through me-2">
-
-                                            R$
-                                            <?php
-                                            echo number_format(
-                                                $jogo["precoOriginalPromocoes"],
-                                                2,
-                                                ",",
-                                                "."
-                                            );
-                                            ?>
-
-                                        </span>
-
-                                    <?php endif; ?>
-
-
-                                    <span class="fw-bold text-success fs-5">
-
-                                        R$
-                                        <?php
-                                        echo number_format(
-                                            $jogo["precoPromocoes"],
-                                            2,
-                                            ",",
-                                            "."
-                                        );
-                                        ?>
-
-                                    </span>
-
-                                </div>
-
-
-                                <!-- DESCONTO -->
-                                <?php if ($desconto > 0): ?>
-
-                                    <span class="badge bg-danger mb-3">
-
-                                        <?php echo round($desconto); ?>% OFF
-
-                                    </span>
-
-                                <?php endif; ?>
-
-
-                                <!-- VER JOGO -->
-                                <a
-                                    href="detalhePromocao.php?id=<?php echo $jogo["id_Promocoes"]; ?>"
-                                    class="btn btn-dark w-100"
-                                >
-                                    Ver jogo
-                                </a>
-
-                            </div>
-
-                        </div>
-
-                    </div>
+                    <!-- Categoria -->
+                    <span class="badge bg-secondary mb-2">
+                        <?php echo $jogo['categoriaPromocoes']; ?>
+                    </span>
 
                 </div>
 
-            <?php endwhile; ?>
+                <div>
 
+                    <!-- Preço original -->
+                    <p class="text-muted text-decoration-line-through mb-0">
+                        R$ <?php echo number_format($jogo['precoOriginalPromocoes'], 2, ',', '.'); ?>
+                    </p>
 
-        <?php else: ?>
+                    <!-- Preço promocional -->
+                    <p class="fw-bold text-success fs-5 mb-2">
+                        R$ <?php echo number_format($jogo['precoPromocoes'], 2, ',', '.'); ?>
+                    </p>
 
-            <div class="col-12">
-
-                <div class="alert alert-secondary text-center">
-
-                    Nenhum jogo em promoção no momento.
+                    <!-- Ver promoção -->
+                    <a 
+                        href="visualizarPromocao.php?id=<?php echo $jogo['id_Promocoes']; ?>"
+                        class="btn btn-primary w-100"
+                    >
+                        Ver Jogo
+                    </a>
 
                 </div>
 
             </div>
 
-        <?php endif; ?>
+        </div>
 
     </div>
+
+<?php
+
+    }
+
+} else {
+
+?>
+
+    <div class="col-12">
+
+        <div class="alert alert-secondary text-center">
+            Nenhuma promoção cadastrada.
+        </div>
+
+    </div>
+
+<?php
+
+}
+
+?>
 
 </div>
 

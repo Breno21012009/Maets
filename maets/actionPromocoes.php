@@ -2,507 +2,351 @@
 
 <?php
 
+include "conexaoBD.php";
+
+
 // =========================================================
-// VERIFICA SE O FORMULÁRIO FOI ENVIADO
+// VERIFICA POST
 // =========================================================
 
-if($_SERVER["REQUEST_METHOD"] == "POST"){
+if ($_SERVER["REQUEST_METHOD"] != "POST") {
 
-    // =====================================================
-    // VARIÁVEIS
-    // =====================================================
+    header("Location: formPromocoes.php");
+    exit;
 
-    $nomePromocoes = "";
-    $descricaoPromocoes = "";
-    $categoriaPromocoes = "";
-    $precoPromocoes = "";
-    $paginaPromocoes = "";
-
-    $capaPromocoes = "";
-    $gameplay1Promocoes = "";
-    $gameplay2Promocoes = "";
-    $gameplay3Promocoes = "";
-
-    $erroPreenchimento = false;
-    $erroUpload = false;
+}
 
 
-    // =====================================================
-    // NOME
-    // =====================================================
+// =========================================================
+// RECEBER DADOS
+// =========================================================
 
-    if(empty($_POST["nomePromocoes"])){
+$nomePromocoes = trim($_POST["nomePromocoes"] ?? "");
+$descricaoPromocoes = trim($_POST["descricaoPromocoes"] ?? "");
+$categoriaPromocoes = trim($_POST["categoriaPromocoes"] ?? "");
+$precoOriginalPromocoes = $_POST["precoOriginalPromocoes"] ?? "";
+$precoPromocoes = $_POST["precoPromocoes"] ?? "";
+$paginaPromocoes = trim($_POST["paginaPromocoes"] ?? "");
 
-        echo "<div class='alert alert-warning text-center'>
-                O campo <strong>NOME DO JOGO</strong> é obrigatório!
-              </div>";
 
-        $erroPreenchimento = true;
+// =========================================================
+// VALIDAR DADOS
+// =========================================================
 
-    } else {
+if (
+    empty($nomePromocoes) ||
+    empty($descricaoPromocoes) ||
+    empty($categoriaPromocoes) ||
+    $precoOriginalPromocoes === "" ||
+    $precoPromocoes === "" ||
+    empty($paginaPromocoes)
+) {
 
-        $nomePromocoes = filtrar_entrada(
-            $_POST["nomePromocoes"]
-        );
+    echo "
+    <div class='container my-5'>
+        <div class='alert alert-warning text-center'>
+            Preencha todos os campos obrigatórios.
+        </div>
+    </div>
+    ";
 
+    include "footer.php";
+    exit;
+}
+
+
+if (!is_numeric($precoOriginalPromocoes) || !is_numeric($precoPromocoes)) {
+
+    echo "
+    <div class='container my-5'>
+        <div class='alert alert-warning text-center'>
+            Os preços informados são inválidos.
+        </div>
+    </div>
+    ";
+
+    include "footer.php";
+    exit;
+}
+
+
+if ($precoPromocoes >= $precoOriginalPromocoes) {
+
+    echo "
+    <div class='container my-5'>
+        <div class='alert alert-warning text-center'>
+            O preço promocional deve ser menor que o preço original.
+        </div>
+    </div>
+    ";
+
+    include "footer.php";
+    exit;
+}
+
+
+if (!filter_var($paginaPromocoes, FILTER_VALIDATE_URL)) {
+
+    echo "
+    <div class='container my-5'>
+        <div class='alert alert-warning text-center'>
+            O link para compra não é válido.
+        </div>
+    </div>
+    ";
+
+    include "footer.php";
+    exit;
+}
+
+
+// =========================================================
+// FUNÇÃO DE UPLOAD
+// =========================================================
+
+function enviarImagemPromocao($campo)
+{
+
+    if (
+        !isset($_FILES[$campo]) ||
+        $_FILES[$campo]["error"] != UPLOAD_ERR_OK
+    ) {
+
+        return false;
     }
 
 
-    // =====================================================
-    // DESCRIÇÃO
-    // =====================================================
+    // Limite de 5 MB
 
-    if(empty($_POST["descricaoPromocoes"])){
+    if ($_FILES[$campo]["size"] > 5000000) {
 
-        echo "<div class='alert alert-warning text-center'>
-                O campo <strong>DESCRIÇÃO</strong> é obrigatório!
-              </div>";
-
-        $erroPreenchimento = true;
-
-    } else {
-
-        $descricaoPromocoes = filtrar_entrada(
-            $_POST["descricaoPromocoes"]
-        );
-
+        return false;
     }
 
 
-    // =====================================================
-    // CATEGORIA
-    // =====================================================
+    // Verifica extensão
 
-    if(empty($_POST["categoriaPromocoes"])){
+    $extensao = strtolower(
+        pathinfo(
+            $_FILES[$campo]["name"],
+            PATHINFO_EXTENSION
+        )
+    );
 
-        echo "<div class='alert alert-warning text-center'>
-                O campo <strong>CATEGORIA</strong> é obrigatório!
-              </div>";
 
-        $erroPreenchimento = true;
+    $extensoesPermitidas = [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp"
+    ];
 
-    } else {
 
-        $categoriaPromocoes = filtrar_entrada(
-            $_POST["categoriaPromocoes"]
-        );
+    if (!in_array($extensao, $extensoesPermitidas)) {
 
+        return false;
     }
 
 
-    // =====================================================
-    // PREÇO
-    // =====================================================
+    // Gera nome único
 
-    if(
-        !isset($_POST["precoPromocoes"]) ||
-        $_POST["precoPromocoes"] === ""
-    ){
-
-        echo "<div class='alert alert-warning text-center'>
-                O campo <strong>PREÇO PROMOCIONAL</strong> é obrigatório!
-              </div>";
-
-        $erroPreenchimento = true;
-
-    } else {
-
-        $precoPromocoes = str_replace(
-            ",",
-            ".",
-            $_POST["precoPromocoes"]
-        );
-
-        if(!is_numeric($precoPromocoes)){
-
-            echo "<div class='alert alert-warning text-center'>
-                    O <strong>PREÇO</strong> deve conter um valor válido!
-                  </div>";
-
-            $erroPreenchimento = true;
-
-        }
-
-    }
+    $novoNome = uniqid("promocao_", true) . "." . $extensao;
 
 
-    // =====================================================
-    // PÁGINA DO JOGO
-    // =====================================================
-
-    if(empty($_POST["paginaPromocoes"])){
-
-        echo "<div class='alert alert-warning text-center'>
-                O campo <strong>PÁGINA DO JOGO</strong> é obrigatório!
-              </div>";
-
-        $erroPreenchimento = true;
-
-    } else {
-
-        $paginaPromocoes = filtrar_entrada(
-            $_POST["paginaPromocoes"]
-        );
-
-        if(!filter_var($paginaPromocoes, FILTER_VALIDATE_URL)){
-
-            echo "<div class='alert alert-warning text-center'>
-                    O campo <strong>PÁGINA DO JOGO</strong>
-                    deve conter uma URL válida!
-                  </div>";
-
-            $erroPreenchimento = true;
-
-        }
-
-    }
-
-
-    // =====================================================
-    // FUNÇÃO PARA UPLOAD
-    // =====================================================
-
-    function enviarImagemPromocao($nomeCampo, $diretorio){
-
-        if(
-            !isset($_FILES[$nomeCampo]) ||
-            $_FILES[$nomeCampo]["size"] == 0
-        ){
-
-            echo "<div class='alert alert-warning text-center'>
-                    A imagem <strong>$nomeCampo</strong> é obrigatória!
-                  </div>";
-
-            return false;
-        }
-
-
-        // Limite de 5 MB
-        if($_FILES[$nomeCampo]["size"] > 5000000){
-
-            echo "<div class='alert alert-warning text-center'>
-                    A imagem <strong>$nomeCampo</strong>
-                    deve ser menor que 5MB!
-                  </div>";
-
-            return false;
-        }
-
-
-        // Nome do arquivo
-        $nomeArquivo = basename(
-            $_FILES[$nomeCampo]["name"]
-        );
-
-
-        // Caminho
-        $caminhoImagem = $diretorio . $nomeArquivo;
-
-
-        // Extensão
-        $tipoDaImagem = strtolower(
-            pathinfo(
-                $caminhoImagem,
-                PATHINFO_EXTENSION
-            )
-        );
-
-
-        // Formatos permitidos
-        if(
-            $tipoDaImagem != "jpg" &&
-            $tipoDaImagem != "jpeg" &&
-            $tipoDaImagem != "png" &&
-            $tipoDaImagem != "webp"
-        ){
-
-            echo "<div class='alert alert-warning text-center'>
-                    A imagem <strong>$nomeCampo</strong>
-                    deve estar nos formatos
-                    JPG, JPEG, PNG ou WEBP!
-                  </div>";
-
-            return false;
-        }
-
-
-        // Move o arquivo
-        if(
-            !move_uploaded_file(
-                $_FILES[$nomeCampo]["tmp_name"],
-                $caminhoImagem
-            )
-        ){
-
-            echo "<div class='alert alert-danger text-center'>
-                    Erro ao enviar a imagem
-                    <strong>$nomeCampo</strong>!
-                  </div>";
-
-            return false;
-        }
-
-
-        return $caminhoImagem;
-    }
-
-
-    // =====================================================
-    // UPLOAD DAS IMAGENS
-    // =====================================================
+    // Diretório
 
     $diretorio = "assets/img/";
 
 
-    $capaPromocoes = enviarImagemPromocao(
-        "capaPromocoes",
-        $diretorio
-    );
+    // Cria pasta se não existir
 
+    if (!is_dir($diretorio)) {
 
-    $gameplay1Promocoes = enviarImagemPromocao(
-        "gameplay1Promocoes",
-        $diretorio
-    );
-
-
-    $gameplay2Promocoes = enviarImagemPromocao(
-        "gameplay2Promocoes",
-        $diretorio
-    );
-
-
-    $gameplay3Promocoes = enviarImagemPromocao(
-        "gameplay3Promocoes",
-        $diretorio
-    );
-
-
-    // =====================================================
-    // VERIFICA UPLOAD
-    // =====================================================
-
-    if(
-        $capaPromocoes === false ||
-        $gameplay1Promocoes === false ||
-        $gameplay2Promocoes === false ||
-        $gameplay3Promocoes === false
-    ){
-
-        $erroUpload = true;
+        mkdir($diretorio, 0777, true);
 
     }
 
 
-    // =====================================================
-    // INSERE NO BANCO
-    // =====================================================
+    // Caminho final
 
-    if(
-        !$erroPreenchimento &&
-        !$erroUpload
-    ){
-
-        include "conexaoBD.php";
+    $caminho = $diretorio . $novoNome;
 
 
-        $inserirPromocao = "INSERT INTO promocoes
-        (
-            nomePromocoes,
-            descricaoPromocoes,
-            categoriaPromocoes,
-            precoPromocoes,
-            capaPromocoes,
-            paginaPromocoes,
-            gameplay1Promocoes,
-            gameplay2Promocoes,
-            gameplay3Promocoes
+    // Move arquivo
+
+    if (
+        move_uploaded_file(
+            $_FILES[$campo]["tmp_name"],
+            $caminho
         )
-        VALUES
-        (
-            '$nomePromocoes',
-            '$descricaoPromocoes',
-            '$categoriaPromocoes',
-            '$precoPromocoes',
-            '$capaPromocoes',
-            '$paginaPromocoes',
-            '$gameplay1Promocoes',
-            '$gameplay2Promocoes',
-            '$gameplay3Promocoes'
-        )";
+    ) {
 
-
-        // =================================================
-        // EXECUTA
-        // =================================================
-
-        if(mysqli_query($conn, $inserirPromocao)){
-
-            echo "<div class='alert alert-success text-center'>
-                    O cadastro da
-                    <strong>PROMOÇÃO</strong>
-                    foi efetuado com sucesso!
-                  </div>";
-
-
-            echo "
-
-            <div class='container mb-3 mt-3'>
-
-                <div class='text-center mb-4'>
-
-                    <img src='$capaPromocoes'
-                         title='Capa de $nomePromocoes'
-                         style='width:250px;'
-                         class='img-thumbnail'>
-
-                </div>
-
-
-                <table class='table'
-                       style='--bs-table-color:white;
-                              color:white !important;'>
-
-                    <tr>
-
-                        <th style='color:white !important;'>
-                            NOME
-                        </th>
-
-                        <td style='color:white !important;'>
-                            $nomePromocoes
-                        </td>
-
-                    </tr>
-
-
-                    <tr>
-
-                        <th style='color:white !important;'>
-                            DESCRIÇÃO
-                        </th>
-
-                        <td style='color:white !important;'>
-                            $descricaoPromocoes
-                        </td>
-
-                    </tr>
-
-
-                    <tr>
-
-                        <th style='color:white !important;'>
-                            CATEGORIA
-                        </th>
-
-                        <td style='color:white !important;'>
-                            $categoriaPromocoes
-                        </td>
-
-                    </tr>
-
-
-                    <tr>
-
-                        <th style='color:white !important;'>
-                            PREÇO PROMOCIONAL
-                        </th>
-
-                        <td style='color:white !important;'>
-                            R$ $precoPromocoes
-                        </td>
-
-                    </tr>
-
-
-                    <tr>
-
-                        <th style='color:white !important;'>
-                            PÁGINA DO JOGO
-                        </th>
-
-                        <td style='color:white !important;'>
-                            $paginaPromocoes
-                        </td>
-
-                    </tr>
-
-                </table>
-
-
-                <h4 class='text-white mt-4 mb-3'>
-                    Fotos da Gameplay
-                </h4>
-
-
-                <div class='row'>
-
-                    <div class='col-md-4 mb-3'>
-
-                        <img src='$gameplay1Promocoes'
-                             class='img-fluid rounded'
-                             alt='Gameplay 1'>
-
-                    </div>
-
-
-                    <div class='col-md-4 mb-3'>
-
-                        <img src='$gameplay2Promocoes'
-                             class='img-fluid rounded'
-                             alt='Gameplay 2'>
-
-                    </div>
-
-
-                    <div class='col-md-4 mb-3'>
-
-                        <img src='$gameplay3Promocoes'
-                             class='img-fluid rounded'
-                             alt='Gameplay 3'>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            ";
-
-        } else {
-
-            echo "<div class='alert alert-danger text-center'>
-                    Erro ao tentar cadastrar
-                    <strong>PROMOÇÃO</strong>
-                    no banco de dados!
-                  </div>";
-
-        }
+        return $caminho;
 
     }
 
-}
-else{
 
-    header("location:formPromocoes.php");
+    return false;
 
 }
 
 
 // =========================================================
-// FILTRAR ENTRADAS
+// UPLOAD DAS IMAGENS
 // =========================================================
 
-function filtrar_entrada($dado){
+$capaPromocoes = enviarImagemPromocao(
+    "capaPromocoes"
+);
 
-    $dado = trim($dado);
+$gameplay1Promocoes = enviarImagemPromocao(
+    "gameplay1Promocoes"
+);
 
-    $dado = stripslashes($dado);
+$gameplay2Promocoes = enviarImagemPromocao(
+    "gameplay2Promocoes"
+);
 
-    $dado = htmlspecialchars($dado);
+$gameplay3Promocoes = enviarImagemPromocao(
+    "gameplay3Promocoes"
+);
 
-    return $dado;
+
+// =========================================================
+// VERIFICAR IMAGENS
+// =========================================================
+
+if (
+    $capaPromocoes === false ||
+    $gameplay1Promocoes === false ||
+    $gameplay2Promocoes === false ||
+    $gameplay3Promocoes === false
+) {
+
+    echo "
+    <div class='container my-5'>
+        <div class='alert alert-danger text-center'>
+            Erro ao enviar uma ou mais imagens.
+            <br>
+            Verifique se as imagens estão em JPG, JPEG, PNG ou WEBP
+            e possuem menos de 5MB.
+        </div>
+    </div>
+    ";
+
+    include "footer.php";
+    exit;
 }
+
+
+// =========================================================
+// INSERIR NO BANCO
+// =========================================================
+
+$sql = "INSERT INTO promocoes
+(
+    nomePromocoes,
+    descricaoPromocoes,
+    categoriaPromocoes,
+    precoPromocoes,
+    precoOriginalPromocoes,
+    capaPromocoes,
+    paginaPromocoes,
+    gameplay1Promocoes,
+    gameplay2Promocoes,
+    gameplay3Promocoes
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+
+$stmt = mysqli_prepare($conn, $sql);
+
+
+if (!$stmt) {
+
+    die(
+        "Erro ao preparar cadastro: "
+        . mysqli_error($conn)
+    );
+
+}
+
+
+mysqli_stmt_bind_param(
+    $stmt,
+    "sssddsssss",
+    $nomePromocoes,
+    $descricaoPromocoes,
+    $categoriaPromocoes,
+    $precoPromocoes,
+    $precoOriginalPromocoes,
+    $capaPromocoes,
+    $paginaPromocoes,
+    $gameplay1Promocoes,
+    $gameplay2Promocoes,
+    $gameplay3Promocoes
+);
+
+
+// =========================================================
+// EXECUTAR
+// =========================================================
+
+if (mysqli_stmt_execute($stmt)) {
+
+    echo "
+    <div class='container my-5'>
+
+        <div class='alert alert-success text-center'>
+
+            <strong>Promoção cadastrada com sucesso!</strong>
+
+        </div>
+
+
+        <div class='text-center'>
+
+            <img
+                src='$capaPromocoes'
+                style='width:250px;'
+                class='img-thumbnail mb-4'
+            >
+
+            <br>
+
+            <a
+                href='promocoes.php'
+                class='btn btn-dark'
+            >
+                Ver Promoções
+            </a>
+
+        </div>
+
+    </div>
+    ";
+
+}
+else {
+
+    echo "
+    <div class='container my-5'>
+
+        <div class='alert alert-danger text-center'>
+
+            Erro ao cadastrar promoção:
+
+            " . mysqli_stmt_error($stmt) . "
+
+        </div>
+
+    </div>
+    ";
+
+}
+
+
+mysqli_stmt_close($stmt);
 
 ?>
 

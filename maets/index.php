@@ -21,12 +21,6 @@ $resultado = mysqli_query($conn, $sql);
     </div>
 
     <div class="col-md-3 mb-4">
-        <a href="esportes.php" class="btn btn-light w-100 py-4 fs-4 border categoria-btn">
-            Esportes
-        </a>
-    </div>
-
-    <div class="col-md-3 mb-4">
         <a href="rpg.php" class="btn btn-light w-100 py-4 fs-4 border categoria-btn">
             RPG
         </a>

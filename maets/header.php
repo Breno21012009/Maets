@@ -22,6 +22,7 @@
 <head>
 
     <meta charset="utf-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>MAETS - Plataforma Digital de Compra de Jogos</title>
@@ -37,6 +38,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+
 
 <style>
 
@@ -77,6 +79,7 @@
     }
 
     /* Cards dos jogos */
+
     .card{
         background:#171a21;
         color:white;
@@ -92,6 +95,7 @@
     }
 
     /* Botões de categoria */
+
     .btn-light{
         background:#171a21;
         color:white;
@@ -107,15 +111,24 @@
 
 </head>
 
+
 <body>
+
+
+<!-- MENU -->
 
 <nav class="navbar navbar-expand-lg navbar-dark">
 
     <div class="container">
 
+        <!-- LOGO -->
+
         <a class="navbar-brand audiowide" href="index.php">
             MAETS
         </a>
+
+
+        <!-- BOTÃO MOBILE -->
 
         <button class="navbar-toggler"
                 type="button"
@@ -126,181 +139,351 @@
 
         </button>
 
+
+        <!-- MENU -->
+
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
             <ul class="navbar-nav me-auto">
 
-                <li class="nav-item">
-                    <a class="nav-link" href="loja.php">Loja</a>
-                </li>
+
+                <!-- LOJA -->
 
                 <li class="nav-item">
-                    <a class="nav-link" href="promocoes.php">Promoções</a>
+
+                    <a class="nav-link" href="loja.php">
+                        Loja
+                    </a>
+
                 </li>
 
+
+                <!-- PROMOÇÕES -->
+
                 <li class="nav-item">
-                    <a class="nav-link" href="sobre.php">Sobre</a>
+
+                    <a class="nav-link" href="promocoes.php">
+                        Promoções
+                    </a>
+
                 </li>
+
+
+                <!-- SOBRE -->
+
+                <li class="nav-item">
+
+                    <a class="nav-link" href="sobre.php">
+                        Sobre
+                    </a>
+
+                </li>
+
 
             </ul>
+
+
+            <!-- ÁREA DO USUÁRIO -->
 
             <ul class="navbar-nav">
 
                 <?php
 
-                    if(isset($_SESSION['logado']) && $_SESSION['logado'] === true){
-                        if($nivelUsuario == "administrador"){
-                    
+                if(isset($_SESSION['logado']) && $_SESSION['logado'] === true){
+
+                    if($nivelUsuario == "administrador"){
+
                         echo "
+
+                        <li class='nav-item dropdown'>
+
+                            <a class='nav-link dropdown-toggle'
+                               href='#'
+                               data-bs-toggle='dropdown'>
+
+                                <i class='bi bi-person-circle'></i>
+                                $primeiroNome
+
+                            </a>
+
+
+                            <ul class='dropdown-menu dropdown-menu-end'>
+
+
+                                <!-- PERFIL -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='perfil.php'>
+
+                                        <i class='bi bi-person'></i>
+                                        Meu Perfil
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- BIBLIOTECA -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='biblioteca.php'>
+
+                                        <i class='bi bi-book'></i>
+                                        Biblioteca
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- AMIGOS -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='#'>
+
+                                        <i class='bi bi-people'></i>
+                                        Amigos
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- MINHAS COMPRAS -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='#'>
+
+                                        <i class='bi bi-handbag'></i>
+                                        Minhas Compras
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- FAVORITOS -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='#'>
+
+                                        <i class='bi bi-heart'></i>
+                                        Favoritos
+
+                                    </a>
+
+                                </li>
+
+
+                                <li>
+                                    <hr>
+                                </li>
+
+
+                                <!-- GERENCIAR USUÁRIOS -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='listarUsuarios.php'>
+
+                                        <i class='bi bi-gear'></i>
+                                        Gerenciar Usuários
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- CADASTRAR JOGO -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='formJogo.php'>
+
+                                        <i class='bi bi-controller'></i>
+                                        Cadastrar Jogo
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- CADASTRAR PROMOÇÃO -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='formPromocoes.php'>
+
+                                        <i class='bi bi-tag'></i>
+                                        Cadastrar Promoção
+
+                                    </a>
+
+                                </li>
+
+
+                                <li>
+                                    <hr>
+                                </li>
+
+
+                                <!-- SAIR -->
+
+                                <li>
+
+                                    <a class='dropdown-item' href='logout.php'>
+                                        Sair
+                                    </a>
+
+                                </li>
+
+
+                            </ul>
+
+                        </li>
+
+                        ";
+
+                    }
+
+                    else{
+
+                        if($nivelUsuario == "comum"){
+
+                            echo "
+
                             <li class='nav-item dropdown'>
 
-                                <a class='nav-link dropdown-toggle' href='#' data-bs-toggle='dropdown'>
-                                    <i class='bi bi-person-circle'></i> $primeiroNome
+                                <a class='nav-link dropdown-toggle'
+                                   href='#'
+                                   data-bs-toggle='dropdown'>
+
+                                    <i class='bi bi-person-circle'></i>
+                                    $primeiroNome
+
                                 </a>
+
 
                                 <ul class='dropdown-menu dropdown-menu-end'>
 
+
+                                    <!-- PERFIL -->
+
                                     <li>
+
                                         <a class='dropdown-item' href='perfil.php'>
+
                                             <i class='bi bi-person'></i>
                                             Meu Perfil
+
                                         </a>
+
                                     </li>
 
+
+                                    <!-- BIBLIOTECA -->
+
                                     <li>
+
                                         <a class='dropdown-item' href='biblioteca.php'>
+
                                             <i class='bi bi-book'></i>
                                             Biblioteca
+
                                         </a>
+
                                     </li>
 
+
+                                    <!-- AMIGOS -->
+
                                     <li>
+
                                         <a class='dropdown-item' href='#'>
+
                                             <i class='bi bi-people'></i>
                                             Amigos
+
                                         </a>
+
                                     </li>
 
+
+                                    <!-- MINHAS COMPRAS -->
+
                                     <li>
+
                                         <a class='dropdown-item' href='#'>
+
                                             <i class='bi bi-handbag'></i>
                                             Minhas Compras
+
                                         </a>
+
                                     </li>
 
+
+                                    <!-- FAVORITOS -->
+
                                     <li>
+
                                         <a class='dropdown-item' href='#'>
+
                                             <i class='bi bi-heart'></i>
                                             Favoritos
+
                                         </a>
+
                                     </li>
 
-                                    <li><hr></li>
-
-                                  <li>
-                                        <a class='dropdown-item' href='listarUsuarios.php'>
-                                            <i class='bi bi-gear'></i>
-                                            Gerenciar Usuários
-                                        </a>
-                                    </li>
 
                                     <li>
-                                        <a class='dropdown-item' href='formJogo.php'>
-                                            <i class='bi bi-controller'></i>
-                                            Cadastrar Jogo
-                                        </a>
+                                        <hr>
                                     </li>
 
-                                    <li>
-                                        <a class='dropdown-item' href='formPromocoes.php'>
-                                            <i class='bi bi-tag'></i>
-                                            Cadastrar Promoção
-                                        </a>
-                                    </li>
 
-                                    <li><hr></li>
+                                    <!-- SAIR -->
 
                                     <li>
+
                                         <a class='dropdown-item' href='logout.php'>
                                             Sair
                                         </a>
+
                                     </li>
+
 
                                 </ul>
 
                             </li>
-                        
-                        ";
-                                
-                    }
-                    else{
-                        if ($nivelUsuario == "comum"){
-                            echo "
-                                <li class='nav-item dropdown'>
 
-                                <a class='nav-link dropdown-toggle' href='#' data-bs-toggle='dropdown'>
-                                    <i class='bi bi-person-circle'></i> $primeiroNome
-                                </a>
-
-                                <ul class='dropdown-menu dropdown-menu-end'>
-
-                                    <li>
-                                        <a class='dropdown-item' href='perfil.php'>
-                                            <i class='bi bi-person'></i>
-                                            Meu Perfil
-                                        </a>
-                                    </li>
-
-                                    <li>
-                                        <a class='dropdown-item' href='biblioteca.php'>
-                                            <i class='bi bi-book'></i>
-                                            Biblioteca
-                                        </a>
-                                    </li>
-
-                                    <li>
-                                        <a class='dropdown-item' href='#'>
-                                            <i class='bi bi-people'></i>
-                                            Amigos
-                                        </a>
-                                    </li>
-
-                                    <li>
-                                        <a class='dropdown-item' href='#'>
-                                            <i class='bi bi-handbag'></i>
-                                            Minhas Compras
-                                        </a>
-                                    </li>
-
-                                    <li>
-                                        <a class='dropdown-item' href='#'>
-                                            <i class='bi bi-heart'></i>
-                                            Favoritos
-                                        </a>
-                                    </li>
-
-                                    <li><hr></li>
-
-                                    <li>
-                                        <a class='dropdown-item' href='logout.php'>
-                                            Sair
-                                        </a>
-                                    </li>
-
-                                </ul>
-
-                            </li>
                             ";
+
                         }
+
                     }
+
                 }
+
                 else{
+
                     echo "
-                        <li class='nav-item'>
-                            <a class='nav-link' href='formLogin.php'>
-                                Login
-                            </a>
-                        </li>";
+
+                    <li class='nav-item'>
+
+                        <a class='nav-link' href='formLogin.php'>
+                            Login
+                        </a>
+
+                    </li>
+
+                    ";
+
                 }
 
                 ?>
@@ -313,13 +496,17 @@
 
 </nav>
 
+
+
+<!-- BANNER -->
+
 <header class="banner">
 
     <div class="container text-center">
 
         <img src="img/logo.maets-removebg-preview.png"
-            width="220"
-            style="margin-bottom: -70px;">
+             width="220"
+             style="margin-bottom: -70px;">
 
         <h1 class="audiowide">
             MAETS
@@ -336,6 +523,10 @@
     </div>
 
 </header>
+
+
+
+<!-- CONTEÚDO -->
 
 <section class="py-5">
 
